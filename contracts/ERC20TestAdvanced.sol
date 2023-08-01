@@ -30,7 +30,7 @@ contract ExternalTestingToken is PropertiesAsserts{
     ERC20Burn token;
 
     User alice;
-
+    User bob;
     constructor() {
         // Deploy the token
         // All the token belong to the contract
@@ -66,4 +66,14 @@ contract ExternalTestingToken is PropertiesAsserts{
         assertEq(balanceAfter - balanceBefore, amount, "The amount transfered must be equal to the expected amount");
 
     }
+
+    function testTransfer(uint amount) public {
+        amount = clampLte(amount, token.balanceOf(address(this)));
+        uint balanceBefore = token.balanceOf(address(alice));
+        bool success = token.transfer(address(alice), amount);
+        uint balanceAfter = token.balanceOf(address(alice));
+        // assertEq(success, true, "a successful transfer returns true");
+        assertEq(balanceAfter - balanceBefore, amount, "amount trnasfered equals to amount received");
+    }
+
 }
