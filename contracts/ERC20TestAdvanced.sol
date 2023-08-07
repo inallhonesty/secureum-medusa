@@ -49,22 +49,43 @@ contract ExternalTestingToken is PropertiesAsserts{
         amount = clampLte(amount, token.allowance(address(alice), address(this)));
 
         uint balanceBefore = token.balanceOf(address(alice));
+        uint balanceBeforeMedusa = token.balanceOf(address(this));
 
-        token.transferFrom(address(alice), address(this), amount);
+        bool success = token.transferFrom(address(alice), address(this), amount);
 
         uint balanceAfter = token.balanceOf(address(alice));
-
+        uint balanceAfterMedusa = token.balanceOf(address(this));
+        assertEq(success, true, "a successful transfer returns true");
         assertEq(balanceAfter - balanceBefore, amount, "The amount transfered must be equal to the expected amount");
-
+        assertEq(balanceAfterMedusa - balanceBeforeMedusa, amount, "amount transfered equals to amount received");
     }
 
     function testTransfer(uint amount) public {
         amount = clampLte(amount, token.balanceOf(address(this)));
         uint balanceBefore = token.balanceOf(address(alice));
+        uint balanceBeforeMedusa = token.balanceOf(address(this));
         bool success = token.transfer(address(alice), amount);
         uint balanceAfter = token.balanceOf(address(alice));
-        // assertEq(success, true, "a successful transfer returns true");
-        assertEq(balanceAfter - balanceBefore, amount, "amount trnasfered equals to amount received");
+        uint balanceAfterMedusa = token.balanceOf(address(this));
+        assertEq(success, true, "a successful transfer returns true");
+        assertEq(balanceAfter - balanceBefore, amount, "amount transfered equals to amount received");
+        assertEq(balanceAfterMedusa - balanceBeforeMedusa, amount, "amount transfered equals to amount received");
     }
 
+    function testRemoveAllowance(uint amount) public {
+
+        vm.prank(address(alice));
+        bool success1 = token.approve(address(this), amount);
+        uint256 intermediaryAllowance = token.allowance(address(alice), address(this));
+        vm.prank(address(alice));
+        bool success2 = token.approve(address(this), 0);
+        uint256 finalAllowance = token.allowance(address(alice), address(this));
+
+
+        assertEq(intermediaryAllowance, amount, "approve sets the correct allowance");
+        assertEq(finalAllowance, 0, "calling the aprove function back to 0 gets the allowance back to 0");
+        assertEq(success1, true, "a successful approval returns true");
+        assertEq(success2, true, "a successful approval returns true");
+        
+    }
 }
